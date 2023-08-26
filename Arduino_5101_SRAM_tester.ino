@@ -1,24 +1,26 @@
 /*
- * 2114 Static RAM tester
+ * 5101 Static RAM tester
  * 
- * It has 9 address lines and 4 data lines
+ * It has 8 address lines and 4 data lines
  * 
  * Pin assignment as follows:
- * Digital pins 0-9 are connected to the 2114 Address pins (blue wires)
- * Digital pins 10-13 are connected to the 2114 Data pins (yellow wires)
- * Analog pin A0 is used for RW (green wire) (LOW = WRITE)
+ * Digital pins 0-7 are connected to the 5101 Address pins
+ * Digital pins 10-13 are connected to the 5101 Data pins
+ * Digital pin 8 is used for RW (LOW = WRITE)
+ * Digital pin 9 is used for OD (HIGH = Output Disabled)
  * 
  * +5V (red wire)
  * GND (black wire)
- * 2114 pin 9 (CS) is wired directly to GND (white wire)
+ * 5101 pin 19 (CS) is wired directly to GND
+ * 5101 pin 17 (CS INV) is wired directly to VCC
+ * Input and Output pins are linked togther for testing
  * 
- * 
- * Carsten Skjerk June 2021
+ * derived from 2114 Static RAM tester by Carsten Skjerk June 2021
  */
 
 // Address Pins
-const int addressPins[10] = {
-  0,1,2,3,4,5,6,7,8,9
+const int addressPins[8] = {
+  0,1,2,3,4,5,6,7
 };
 
 // Data Pins
@@ -26,12 +28,14 @@ const int dataPins[4] = {
   10,11,12,13
 };
 
-// Analog pin 0 is used as digital output for the RW signal
-const int RW = 14; // Analog Pin 0
+// Analog pin 8 is used as digital output for the RW signal
+const int RW = 8; // Digital Pin 8
+// Analog pin 9 is used as digital output for the OD (output disable) signal
+const int OD = 9; // Digital Pin 9
 
 // Set Address pins to output
 void setupAddressPins() {
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<8; i++) {
     pinMode(addressPins[i], OUTPUT);
   }
   delay(1); // Wait a bit for them to settle
@@ -48,7 +52,7 @@ void setDataPinsOutput() {
 // Set Data pins to input
 void setDataPinsInput() {
   for (int i=0; i<4; i++) {
-    pinMode(dataPins[i], INPUT);
+    pinMode(dataPins[i], INPUT_PULLUP);
   }
   delay(1); // Wait a bit for them to settle
 }
@@ -59,7 +63,9 @@ void setup() {
   setupAddressPins();
   setDataPinsOutput();
   pinMode(RW, OUTPUT);
-  digitalWrite(RW, LOW); // Set READ mode
+  pinMode(OD, OUTPUT);
+  digitalWrite(RW, HIGH); // Set READ mode
+  digitalWrite(OD, LOW); // Set READ mode
   
   // Initialize Serial Port
   Serial.begin(115200);
@@ -68,7 +74,7 @@ void setup() {
 
 // Set the address pins to match the specified address
 void setAddressBits(int address) {
-  for (int i=0; i<14; i++) {
+  for (int i=0; i<8; i++) {
     if (bitRead(address, i)==1) {
       digitalWrite(addressPins[i], HIGH);
     } else {
@@ -90,6 +96,9 @@ void setDataBits(byte value) {
 
 // Write data to the specified memory address
 void writeData(int address, byte data) {
+  // Diable output
+  digitalWrite(OD, HIGH);
+
   // Set address bits
   setAddressBits(address);
 
@@ -110,6 +119,9 @@ void writeData(int address, byte data) {
 // Read data from the specified memory address
 // Note the the RW pin must already be in READ mode
 byte readData(int address) {
+  // Enable output
+  digitalWrite(OD, LOW);
+
   // Set address bits
   setAddressBits(address);
 
@@ -136,13 +148,13 @@ void loop() {
     Serial.print("Running Testpattern "); printBinary(pattern);
     Serial.println();
    
-    // Loop through all addresses in the 2114
-    for (int addr = 0; addr<1024; addr++) {
-      // Write testpattern to the 2114
+    // Loop through all addresses in the 5101
+    for (int addr = 0; addr<256; addr++) {
+      // Write testpattern to the 5101
       setDataPinsOutput();
       writeData(addr,pattern);
       
-      // Read data from the 2114
+      // Read data from the 5101
       setDataPinsInput();
       byte data = readData(addr);
 

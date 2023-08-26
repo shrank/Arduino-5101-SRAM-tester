@@ -1,18 +1,6 @@
-# 2114 SRAM tester
+# 5101 SRAM tester
 
-I got my hands on an old Lambda 8300 home computer, which was not working.
-
-The only sign of life was a blinking cursor, but no keys were working on the keyboard, so I had to start fault finding.
-
-Obviously the the first thing I checked was the connections to the keyboard, where I found a few problems, but that didn't solve the problem of the machine not working.
-
-So next thing was to check the RAM which is often the problem on old machines.
-
-This machine has four 2114 1024x4 SRAM chips giving it 2K of memory, but I had no way of testing these chips.
-
-So I thought that it must be possible to create a simple tester with an Arduino, and so I did.
-
-The source code has comments to explain what the different parts do, and how to connect the wires.
+This sketch tests 5101 static RAMs found in old pinball and slot machines. forked from https://github.com/skjerk/Arduino-2114-SRAM-tester
 
 ## Programming the Arduino
 
@@ -25,15 +13,9 @@ It only runs once, so you can push the Reset button on the Arduino to make it ru
 
 Here is the pinout of the 2114 RAM chip
 
-![](2114_pinout.png)
+![](5101_pinout.png)
 
-I used the following wire colors:
-* Blue for the address pins, 
-* Yellow for the I/O data pins
-* Red for +5V (VCC)
-* Black for Ground
-* Green for the WE pin
-* White to connect CS to GND.
+The inputs and outputs are linked together for testing. This is the way the chips are used on the MPU board I have.
 
 ## Board setup
 
